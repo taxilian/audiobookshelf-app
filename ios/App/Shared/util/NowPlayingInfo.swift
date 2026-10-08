@@ -88,28 +88,34 @@ class NowPlayingInfo {
     }
     
     public func reset() {
-        nowPlayingInfo = [:]
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.nowPlayingInfo = [:]
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        }
     }
     
     private func setMetadata(artwork: MPMediaItemArtwork?, metadata: NowPlayingMetadata?) {
-        if metadata == nil {
-            return
+        // Update on the main to prevent access collisions
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let metadata = metadata else { return }
+            
+            if artwork != nil {
+                self.nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
+            } else if self.shouldFetchCover(id: metadata.id) {
+                self.nowPlayingInfo[MPMediaItemPropertyArtwork] = nil
+            }
+            
+            self.nowPlayingInfo[MPNowPlayingInfoPropertyExternalContentIdentifier] = metadata.id
+            self.nowPlayingInfo[MPNowPlayingInfoPropertyIsLiveStream] = false
+            self.nowPlayingInfo[MPNowPlayingInfoPropertyMediaType] = "hls"
+            
+            self.nowPlayingInfo[MPMediaItemPropertyTitle] = metadata.title
+            self.nowPlayingInfo[MPMediaItemPropertyArtist] = metadata.author ?? "unknown"
+            self.nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = metadata.title
+            
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = self.nowPlayingInfo
         }
-        
-        if artwork != nil {
-            nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
-        } else if shouldFetchCover(id: metadata!.id) {
-            nowPlayingInfo[MPMediaItemPropertyArtwork] = nil
-        }
-        
-        nowPlayingInfo[MPNowPlayingInfoPropertyExternalContentIdentifier] = metadata!.id
-        nowPlayingInfo[MPNowPlayingInfoPropertyIsLiveStream] = false
-        nowPlayingInfo[MPNowPlayingInfoPropertyMediaType] = "hls"
-        
-        nowPlayingInfo[MPMediaItemPropertyTitle] = metadata!.title
-        nowPlayingInfo[MPMediaItemPropertyArtist] = metadata!.author ?? "unknown"
-        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = metadata!.title
     }
     
     private func shouldFetchCover(id: String) -> Bool {

@@ -354,7 +354,6 @@ class AudioPlayer: NSObject {
         DispatchQueue.runOnMainQueue {
             self.audioPlayer.pause()
         }
-        self.markAudioSessionAs(active: false)
         
         Task {
             if let currentTime = self.getCurrentTime() {
