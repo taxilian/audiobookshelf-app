@@ -557,34 +557,48 @@ class AudioPlayer: NSObject {
     // MARK: - Private
     private func createAsset(itemId:String, track:AudioTrack, ino:String) -> AVAsset? {
         guard let playbackSession = self.getPlaybackSession() else { return nil }
+        guard let serverConfig = Store.serverConfig else {
+            AbsLogger.error(message: "createAsset: Server config not found")
+            return nil
+        }
         
         if (playbackSession.playMethod == PlayMethod.directplay.rawValue) {
             // As of v2.22.0 tracks use a different endpoint
             // See: https://github.com/advplyr/audiobookshelf/pull/4263
             let contentUrl: String
             if Store.isServerVersionGreaterThanOrEqualTo("2.22.0") {
-                contentUrl = "\(Store.serverConfig!.address)/public/session/\(playbackSession.id)/track/\(track.index ?? 1)"
+                contentUrl = "\(serverConfig.address)/public/session/\(playbackSession.id)/track/\(track.index ?? 1)"
             } else {
-                contentUrl = "\(Store.serverConfig!.address)/api/items/\(itemId)/file/\(ino)?token=\(Store.serverConfig!.token)"
+                contentUrl = "\(serverConfig.address)/api/items/\(itemId)/file/\(ino)?token=\(serverConfig.token)"
             }
-            let url = URL(string: contentUrl)!
+            guard let url = URL(string: contentUrl) else {
+                AbsLogger.error(message: "createAsset: Invalid direct play URL \(contentUrl)")
+                return nil
+            }
             return AVURLAsset(url: url)
         } else if (playbackSession.playMethod == PlayMethod.local.rawValue) {
             guard let localFile = track.getLocalFile() else {
                 // Worst case we can stream the file
                 AbsLogger.info(message:"Unable to play local file. Resulting to streaming \(track.localFileId ?? "Unknown")")
-                let urlstr = "\(Store.serverConfig!.address)/api/items/\(itemId)/file/\(ino)?token=\(Store.serverConfig!.token)"
-                let url = URL(string: urlstr)!
+                let urlstr = "\(serverConfig.address)/api/items/\(itemId)/file/\(ino)?token=\(serverConfig.token)"
+                guard let url = URL(string: urlstr) else {
+                    AbsLogger.error(message: "createAsset: Invalid local fallback URL \(urlstr)")
+                    return nil
+                }
                 return AVURLAsset(url: url)
             }
             return AVURLAsset(url: localFile.contentPath)
         } else { // HLS Transcode
             let headers: [String: String] = [
-                "Authorization": "Bearer \(Store.serverConfig!.token)"
+                "Authorization": "Bearer \(serverConfig.token)"
             ]
             
-            let contentUrl = "\(Store.serverConfig!.address)\(track.contentUrl ?? "")"
-            return AVURLAsset(url: URL(string: contentUrl)!, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+            let contentUrl = "\(serverConfig.address)\(track.contentUrl ?? "")"
+            guard let url = URL(string: contentUrl) else {
+                AbsLogger.error(message: "createAsset: Invalid HLS URL \(contentUrl)")
+                return nil
+            }
+            return AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         }
     }
     
