@@ -13,6 +13,10 @@ class PlayerHandler {
     
     public static func startPlayback(sessionId: String, playWhenReady: Bool, playbackRate: Float) {
         guard let session = Database.shared.getPlaybackSession(id: sessionId) else { return }
+        guard let libraryItemId = session.libraryItemId else {
+            AbsLogger.error(message: "startPlayback: Session \(sessionId) is missing libraryItemId")
+            return
+        }
         
         // Clean up the existing player
         resetPlayer()
@@ -21,7 +25,7 @@ class PlayerHandler {
         cleanupOldSessions(currentSessionId: sessionId)
         
         // Set now playing info
-        NowPlayingInfo.shared.setSessionMetadata(metadata: NowPlayingMetadata(id: session.id, itemId: session.libraryItemId!, title: session.displayTitle ?? "Unknown title", author: session.displayAuthor, series: nil, isLocal: session.isLocal))
+        NowPlayingInfo.shared.setSessionMetadata(metadata: NowPlayingMetadata(id: session.id, itemId: libraryItemId, title: session.displayTitle ?? "Unknown title", author: session.displayAuthor, series: nil, isLocal: session.isLocal))
         
         // Create the audio player
         player = AudioPlayer(sessionId: sessionId, playWhenReady: playWhenReady, playbackRate: playbackRate)

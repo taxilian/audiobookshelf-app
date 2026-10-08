@@ -25,7 +25,11 @@ class LocalLibraryItem: Object, Codable {
 
     var contentUrl: String? {
         if let path = _contentUrl {
-            return AbsDownloader.itemDownloadFolder(path: path)!.absoluteString
+            guard let downloadFolder = AbsDownloader.itemDownloadFolder(path: path) else {
+                AbsLogger.error(message: "LocalLibraryItem: Failed to resolve download folder for path \(path)")
+                return nil
+            }
+            return downloadFolder.absoluteString
         } else {
             return nil
         }

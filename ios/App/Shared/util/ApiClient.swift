@@ -492,9 +492,15 @@ class ApiClient {
                 return
             }
             
+            guard let serverConfig = Store.serverConfig else {
+                AbsLogger.error(message: "startPlaybackSession: Server config not found")
+                callback(PlaybackSession()) // Return empty session on failure
+                return
+            }
+
             // Set server connection info on the session
-            session.serverConnectionConfigId = Store.serverConfig!.id
-            session.serverAddress = Store.serverConfig!.address
+            session.serverConnectionConfigId = serverConfig.id
+            session.serverAddress = serverConfig.address
             
             callback(session)
         }
