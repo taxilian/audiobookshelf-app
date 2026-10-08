@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		29F77BC589DC49F793B31BCD /* DownloadProgressCoalescer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4DA60CF40F4E339A388C8F /* DownloadProgressCoalescer.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		3A200C1527D64D7E00CBF02E /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A200C1427D64D7E00CBF02E /* AudioPlayer.swift */; };
 		3A90295F280968E700E1D427 /* PlaybackReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A90295E280968E700E1D427 /* PlaybackReport.swift */; };
@@ -41,6 +42,7 @@
 		736BBE47DF2F4D0D105F3F67 /* AudioInterruptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */; };
 		B8298AB870F956B13D7299A5 /* AudioInterruptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */; };
 		C0FDE9CC40AB4E088E220211 /* ProgressRestoreResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */; };
+		C7141D9378A74E1D83BD2AC9 /* DownloadProgressCoalescerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD01F5D9F64A47AFB1FE76CE /* DownloadProgressCoalescerTests.swift */; };
 		E5B94F79DF5A4A17A7C8BF65 /* ProgressRestoreResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */; };
 		E9D5504628AC1A3900C746DD /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504528AC1A3900C746DD /* LibraryItem.swift */; };
 		E9D5504828AC1A7A00C746DD /* MediaType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504728AC1A7A00C746DD /* MediaType.swift */; };
@@ -120,7 +122,9 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		6F2516262E68DA3000F40541 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
+		7F4DA60CF40F4E339A388C8F /* DownloadProgressCoalescer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressCoalescer.swift; sourceTree = "<group>"; };
 		8F9A7CCC479333E44DC314BE /* Pods_Audiobookshelf.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Audiobookshelf.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD01F5D9F64A47AFB1FE76CE /* DownloadProgressCoalescerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressCoalescerTests.swift; sourceTree = "<group>"; };
 		BE96D57E131924D520D57057 /* Pods-Audiobookshelf.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audiobookshelf.debug.xcconfig"; path = "Target Support Files/Pods-Audiobookshelf/Pods-Audiobookshelf.debug.xcconfig"; sourceTree = "<group>"; };
 		C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRestoreResolverTests.swift; sourceTree = "<group>"; };
 		DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRestoreResolver.swift; sourceTree = "<group>"; };
@@ -258,6 +262,7 @@
 			isa = PBXGroup;
 			children = (
 				4DB441E02E19B8BF0056C8F1 /* SecureStorage.swift */,
+				7F4DA60CF40F4E339A388C8F /* DownloadProgressCoalescer.swift */,
 				E9FA07E228C82848005520B0 /* Logger.swift */,
 				3AFCB5E727EA240D00ECCC05 /* NowPlayingInfo.swift */,
 				3AD4FCEA280443DD006DB301 /* Database.swift */,
@@ -375,6 +380,7 @@
 				18BE26F3835249E094A83D34 /* NowPlayingInfoTests.swift */,
 				C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */,
 				5066FACA5CDF4C06B96DEF70 /* DatabaseSessionRestoreTests.swift */,
+				BD01F5D9F64A47AFB1FE76CE /* DownloadProgressCoalescerTests.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -605,6 +611,7 @@
 				E9D5505628AC1BFA00C746DD /* FileMetadata.swift in Sources */,
 				E9E8814A28DA644F00D750C1 /* PlayerTimeUtils.swift in Sources */,
 				736BBE47DF2F4D0D105F3F67 /* AudioInterruptionHandler.swift in Sources */,
+				29F77BC589DC49F793B31BCD /* DownloadProgressCoalescer.swift in Sources */,
 				3AB34055280832720039308B /* PlayerEvents.swift in Sources */,
 				E9D5506C28AC1E2100C746DD /* LocalMediaProgress.swift in Sources */,
 				E5B94F79DF5A4A17A7C8BF65 /* ProgressRestoreResolver.swift in Sources */,
@@ -621,6 +628,7 @@
 				190CDC009F504EBFBABE4008 /* NowPlayingInfoTests.swift in Sources */,
 				C0FDE9CC40AB4E088E220211 /* ProgressRestoreResolverTests.swift in Sources */,
 				9E3E18BE84174D018C729B4F /* DatabaseSessionRestoreTests.swift in Sources */,
+				C7141D9378A74E1D83BD2AC9 /* DownloadProgressCoalescerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
