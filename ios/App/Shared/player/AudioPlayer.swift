@@ -45,6 +45,7 @@ class AudioPlayer: NSObject {
     private var queueItemStatusObserver:NSKeyValueObservation?
     
     private var isRebuildingQueue = false
+    private var interruptionHandler = AudioInterruptionHandler()
     
     // Sleep timer values
     internal var sleepTimeChapterStopAt: Double?
@@ -611,22 +612,27 @@ class AudioPlayer: NSObject {
             let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
                 return
         }
-        
+
+        var isAppSuspended = false
         // When interruption is from the app suspending then don't resume playback
         if #available(iOS 14.5, *) {
             let reasonValue = userInfo[AVAudioSessionInterruptionReasonKey] as? UInt ?? 0
             let reason = AVAudioSession.InterruptionReason(rawValue: reasonValue)
             if (reason == .appWasSuspended) {
                 AbsLogger.info(message:"AVAudioSession was suspended")
-                return
+                isAppSuspended = true
             }
         }
-        
+
         switch type {
+            case .began:
+                if interruptionHandler.handleInterruptionBegan(isPlaying: self.isPlaying(), isAppSuspended: isAppSuspended) == .pause {
+                    self.pause()
+                }
             case .ended:
-                guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
+                let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
                 let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
-                if options.contains(.shouldResume) {
+                if interruptionHandler.handleInterruptionEnded(shouldResume: options.contains(.shouldResume), isAppSuspended: isAppSuspended) == .resume {
                     self.play(allowSeekBack: true)
                 }
             default: ()

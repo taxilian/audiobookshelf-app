@@ -29,6 +29,7 @@
 		4DF6C7172DB58ABF004059F1 /* AbsLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DF6C7162DB58ABF004059F1 /* AbsLogger.swift */; };
 		4DF74912287105C600AC7814 /* DeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DF74911287105C600AC7814 /* DeviceSettings.swift */; };
 		4DFE2DA32D345C390000B204 /* MyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DFE2DA22D345C390000B204 /* MyViewController.swift */; };
+		4556D0A8171A0154ECDEE9DD /* AudioInterruptionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B9D5E2BDC05759D323C9B9 /* AudioInterruptionHandlerTests.swift */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
@@ -37,6 +38,8 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		65643F4DAA661FB0B247247E /* Pods_Audiobookshelf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9A7CCC479333E44DC314BE /* Pods_Audiobookshelf.framework */; };
 		6F2516272E68DA3000F40541 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F2516262E68DA3000F40541 /* LogEntry.swift */; };
+		736BBE47DF2F4D0D105F3F67 /* AudioInterruptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */; };
+		B8298AB870F956B13D7299A5 /* AudioInterruptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */; };
 		E9D5504628AC1A3900C746DD /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504528AC1A3900C746DD /* LibraryItem.swift */; };
 		E9D5504828AC1A7A00C746DD /* MediaType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504728AC1A7A00C746DD /* MediaType.swift */; };
 		E9D5504A28AC1AA600C746DD /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504928AC1AA600C746DD /* Metadata.swift */; };
@@ -116,6 +119,8 @@
 		8F9A7CCC479333E44DC314BE /* Pods_Audiobookshelf.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Audiobookshelf.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE96D57E131924D520D57057 /* Pods-Audiobookshelf.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audiobookshelf.debug.xcconfig"; path = "Target Support Files/Pods-Audiobookshelf/Pods-Audiobookshelf.debug.xcconfig"; sourceTree = "<group>"; };
 		D2F7F575384A63F1C47DE984 /* Pods-Audiobookshelf.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audiobookshelf.release.xcconfig"; path = "Target Support Files/Pods-Audiobookshelf/Pods-Audiobookshelf.release.xcconfig"; sourceTree = "<group>"; };
+		E0B9D5E2BDC05759D323C9B9 /* AudioInterruptionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioInterruptionHandlerTests.swift; sourceTree = "<group>"; };
+		E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioInterruptionHandler.swift; sourceTree = "<group>"; };
 		E9D5504528AC1A3900C746DD /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		E9D5504728AC1A7A00C746DD /* MediaType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaType.swift; sourceTree = "<group>"; };
 		E9D5504928AC1AA600C746DD /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
@@ -365,6 +370,7 @@
 		E9E8814828DA641B00D750C1 /* util */ = {
 			isa = PBXGroup;
 			children = (
+				E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */,
 				E9E8814928DA644F00D750C1 /* PlayerTimeUtils.swift */,
 			);
 			path = util;
@@ -373,6 +379,7 @@
 		E9E8814B28DA6B6B00D750C1 /* util */ = {
 			isa = PBXGroup;
 			children = (
+				E0B9D5E2BDC05759D323C9B9 /* AudioInterruptionHandlerTests.swift */,
 				E9E8814C28DA6B9000D750C1 /* PlayerTimeUtilsTests.swift */,
 			);
 			path = util;
@@ -577,6 +584,7 @@
 				4D66B954282EE87C008272D4 /* AbsDownloader.swift in Sources */,
 				E9D5505628AC1BFA00C746DD /* FileMetadata.swift in Sources */,
 				E9E8814A28DA644F00D750C1 /* PlayerTimeUtils.swift in Sources */,
+				736BBE47DF2F4D0D105F3F67 /* AudioInterruptionHandler.swift in Sources */,
 				3AB34055280832720039308B /* PlayerEvents.swift in Sources */,
 				E9D5506C28AC1E2100C746DD /* LocalMediaProgress.swift in Sources */,
 			);
@@ -587,6 +595,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9E8814D28DA6B9000D750C1 /* PlayerTimeUtilsTests.swift in Sources */,
+				B8298AB870F956B13D7299A5 /* AudioInterruptionHandler.swift in Sources */,
+				4556D0A8171A0154ECDEE9DD /* AudioInterruptionHandlerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
