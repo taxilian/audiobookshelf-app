@@ -575,8 +575,8 @@ class ApiClient {
                     // Remove sessions from db
                     try playbackSessions.forEach { session in
                         AbsLogger.info(message: "syncLocalSessionsWithServer: Handling \(session.displayTitle ?? "") (\(session.id)) \(session.isActiveSession)")
-                        // On first sync then remove all sessions
-                        if (!session.isActiveSession || isFirstSync) {
+                        // Keep the active session so playback context survives an app relaunch
+                        if (!session.isActiveSession) {
                             if let session = session.thaw() {
                                 try session.delete()
                             }

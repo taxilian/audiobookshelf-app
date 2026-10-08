@@ -59,8 +59,21 @@ public class AbsAudioPlayer: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func onReady(_ call: CAPPluginCall) {
-        // TODO: Was used to notify when Abs UI was ready so that last played media could be opened - this was buggy and removed
+        restoreLastActiveSessionIfNeeded()
         call.resolve()
+    }
+
+    /// Re-prepares the most recent active session (paused) after a cold start, so playback context survives process death
+    private func restoreLastActiveSessionIfNeeded() {
+        guard PlayerHandler.getPlaybackSession() == nil else { return } // Player already alive (e.g. webview reload), nothing to restore
+        guard let session = Database.shared.getLastActivePlaybackSession() else { return }
+        guard session.libraryItemId != nil else { return }
+        AbsLogger.info(message: "Restoring last active playback session \(session.id) paused")
+        do {
+            try startPlaybackSession(session, playWhenReady: false, playbackRate: PlayerSettings.main().playbackRate)
+        } catch {
+            AbsLogger.error(message: "Failed to restore last active playback session", error: error)
+        }
     }
 
     @objc func startPlaybackSession(_ session: PlaybackSession, playWhenReady: Bool, playbackRate: Float) throws {

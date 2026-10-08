@@ -294,6 +294,19 @@ class Database {
         }
     }
 
+    public func getLastActivePlaybackSession() -> PlaybackSession? {
+        do {
+            let realm = try Realm()
+            realm.refresh() // Refresh, because working with stale sessions leads to wrong times
+            return realm.objects(PlaybackSession.self).where {
+                $0.isActiveSession == true
+            }.sorted(byKeyPath: "updatedAt", ascending: false).first?.freeze()
+        } catch {
+            debugPrint(error)
+            return nil
+        }
+    }
+
     public func saveLog(_ log: LogEntry) throws {
         let realm = try Realm()
         return try realm.write { realm.add(log) }
