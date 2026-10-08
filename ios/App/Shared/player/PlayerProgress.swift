@@ -101,7 +101,7 @@ class PlayerProgress {
         
         guard var session = session.thaw() else { return }
         
-        // We need to update and check the server time in a transaction for thread-safety
+        // We need to check the server time in a transaction for thread-safety
         try session.update {
             session.realm?.refresh()
             
@@ -117,8 +117,6 @@ class PlayerProgress {
                     return // This only exits the update block
                 }
             }
-            
-            session.serverUpdatedAt = nowInMilliseconds
         }
         session = session.freeze()
         
@@ -128,6 +126,14 @@ class PlayerProgress {
         var success = false
         if session.isLocal {
             success = await ApiClient.reportLocalPlaybackProgress(session)
+            // Only advance the sync gate once the server accepted the update, so failed syncs are retried
+            if success {
+                if let session = session.thaw() {
+                    try session.update {
+                        session.serverUpdatedAt = Date().timeIntervalSince1970 * 1000
+                    }
+                }
+            }
         } else {
             let playbackReport = PlaybackReport(currentTime: session.currentTime, duration: session.duration, timeListened: session.timeListening)
             success = await ApiClient.reportPlaybackProgress(report: playbackReport, sessionId: session.id)
@@ -136,6 +142,7 @@ class PlayerProgress {
                 if let session = session.thaw() {
                     try session.update {
                         session.timeListening = 0
+                        session.serverUpdatedAt = Date().timeIntervalSince1970 * 1000
                     }
                 }
             }

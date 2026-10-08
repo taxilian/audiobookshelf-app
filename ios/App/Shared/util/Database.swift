@@ -280,6 +280,20 @@ class Database {
         }
     }
 
+    public func getMostRecentPlaybackSession(libraryItemId: String, episodeId: String?) -> PlaybackSession? {
+        do {
+            let realm = try Realm()
+            realm.refresh()
+            let sessions = realm.objects(PlaybackSession.self).where {
+                $0.libraryItemId == libraryItemId && $0.episodeId == episodeId
+            }
+            return sessions.sorted(byKeyPath: "updatedAt", ascending: false).first?.freeze()
+        } catch {
+            debugPrint(error)
+            return nil
+        }
+    }
+
     public func saveLog(_ log: LogEntry) throws {
         let realm = try Realm()
         return try realm.write { realm.add(log) }

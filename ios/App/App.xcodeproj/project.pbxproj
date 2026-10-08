@@ -40,6 +40,8 @@
 		6F2516272E68DA3000F40541 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F2516262E68DA3000F40541 /* LogEntry.swift */; };
 		736BBE47DF2F4D0D105F3F67 /* AudioInterruptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */; };
 		B8298AB870F956B13D7299A5 /* AudioInterruptionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */; };
+		C0FDE9CC40AB4E088E220211 /* ProgressRestoreResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */; };
+		E5B94F79DF5A4A17A7C8BF65 /* ProgressRestoreResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */; };
 		E9D5504628AC1A3900C746DD /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504528AC1A3900C746DD /* LibraryItem.swift */; };
 		E9D5504828AC1A7A00C746DD /* MediaType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504728AC1A7A00C746DD /* MediaType.swift */; };
 		E9D5504A28AC1AA600C746DD /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504928AC1AA600C746DD /* Metadata.swift */; };
@@ -119,6 +121,8 @@
 		6F2516262E68DA3000F40541 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
 		8F9A7CCC479333E44DC314BE /* Pods_Audiobookshelf.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Audiobookshelf.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE96D57E131924D520D57057 /* Pods-Audiobookshelf.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audiobookshelf.debug.xcconfig"; path = "Target Support Files/Pods-Audiobookshelf/Pods-Audiobookshelf.debug.xcconfig"; sourceTree = "<group>"; };
+		C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRestoreResolverTests.swift; sourceTree = "<group>"; };
+		DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRestoreResolver.swift; sourceTree = "<group>"; };
 		D2F7F575384A63F1C47DE984 /* Pods-Audiobookshelf.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audiobookshelf.release.xcconfig"; path = "Target Support Files/Pods-Audiobookshelf/Pods-Audiobookshelf.release.xcconfig"; sourceTree = "<group>"; };
 		E0B9D5E2BDC05759D323C9B9 /* AudioInterruptionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioInterruptionHandlerTests.swift; sourceTree = "<group>"; };
 		E7D56158B2EFE0BD1FB2A501 /* AudioInterruptionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioInterruptionHandler.swift; sourceTree = "<group>"; };
@@ -260,6 +264,7 @@
 				3AB34052280829BF0039308B /* Extensions.swift */,
 				3AB34054280832720039308B /* PlayerEvents.swift */,
 				E9D5507228AC218300C746DD /* DaoExtensions.swift */,
+				DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -366,6 +371,7 @@
 			isa = PBXGroup;
 			children = (
 				18BE26F3835249E094A83D34 /* NowPlayingInfoTests.swift */,
+				C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -598,6 +604,7 @@
 				736BBE47DF2F4D0D105F3F67 /* AudioInterruptionHandler.swift in Sources */,
 				3AB34055280832720039308B /* PlayerEvents.swift in Sources */,
 				E9D5506C28AC1E2100C746DD /* LocalMediaProgress.swift in Sources */,
+				E5B94F79DF5A4A17A7C8BF65 /* ProgressRestoreResolver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -609,6 +616,7 @@
 				B8298AB870F956B13D7299A5 /* AudioInterruptionHandler.swift in Sources */,
 				4556D0A8171A0154ECDEE9DD /* AudioInterruptionHandlerTests.swift in Sources */,
 				190CDC009F504EBFBABE4008 /* NowPlayingInfoTests.swift in Sources */,
+				C0FDE9CC40AB4E088E220211 /* ProgressRestoreResolverTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
