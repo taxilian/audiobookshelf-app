@@ -110,6 +110,10 @@ public class AbsAudioPlayer: CAPPlugin, CAPBridgedPlugin {
         } else { // Playing from the server
             ApiClient.startPlaybackSession(libraryItemId: libraryItemId!, episodeId: episodeId, forceTranscode: false) { [weak self] session in
                 do {
+                    if startTimeOverride == nil {
+                        let localSession = Database.shared.getMostRecentPlaybackSession(libraryItemId: libraryItemId!, episodeId: episodeId)
+                        session.currentTime = ProgressRestoreResolver.resolveCurrentTime(serverCurrentTime: session.currentTime, localCurrentTime: localSession?.currentTime, localDuration: localSession?.duration)
+                    }
                     if (startTimeOverride != nil) {
                         session.currentTime = startTimeOverride!
                     }

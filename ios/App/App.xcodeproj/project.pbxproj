@@ -37,6 +37,8 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		65643F4DAA661FB0B247247E /* Pods_Audiobookshelf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9A7CCC479333E44DC314BE /* Pods_Audiobookshelf.framework */; };
 		6F2516272E68DA3000F40541 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F2516262E68DA3000F40541 /* LogEntry.swift */; };
+		C0FDE9CC40AB4E088E220211 /* ProgressRestoreResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */; };
+		E5B94F79DF5A4A17A7C8BF65 /* ProgressRestoreResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */; };
 		E9D5504628AC1A3900C746DD /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504528AC1A3900C746DD /* LibraryItem.swift */; };
 		E9D5504828AC1A7A00C746DD /* MediaType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504728AC1A7A00C746DD /* MediaType.swift */; };
 		E9D5504A28AC1AA600C746DD /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D5504928AC1AA600C746DD /* Metadata.swift */; };
@@ -115,6 +117,8 @@
 		6F2516262E68DA3000F40541 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
 		8F9A7CCC479333E44DC314BE /* Pods_Audiobookshelf.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Audiobookshelf.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE96D57E131924D520D57057 /* Pods-Audiobookshelf.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audiobookshelf.debug.xcconfig"; path = "Target Support Files/Pods-Audiobookshelf/Pods-Audiobookshelf.debug.xcconfig"; sourceTree = "<group>"; };
+		C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRestoreResolverTests.swift; sourceTree = "<group>"; };
+		DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRestoreResolver.swift; sourceTree = "<group>"; };
 		D2F7F575384A63F1C47DE984 /* Pods-Audiobookshelf.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audiobookshelf.release.xcconfig"; path = "Target Support Files/Pods-Audiobookshelf/Pods-Audiobookshelf.release.xcconfig"; sourceTree = "<group>"; };
 		E9D5504528AC1A3900C746DD /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		E9D5504728AC1A7A00C746DD /* MediaType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaType.swift; sourceTree = "<group>"; };
@@ -253,6 +257,7 @@
 				3AB34052280829BF0039308B /* Extensions.swift */,
 				3AB34054280832720039308B /* PlayerEvents.swift */,
 				E9D5507228AC218300C746DD /* DaoExtensions.swift */,
+				DC19581D9A264B71A18736A4 /* ProgressRestoreResolver.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -350,6 +355,7 @@
 			isa = PBXGroup;
 			children = (
 				E9E8814428DA5E6000D750C1 /* player */,
+				A8E2330CCFB64814A0CA6ED4 /* util */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -374,6 +380,14 @@
 			isa = PBXGroup;
 			children = (
 				E9E8814C28DA6B9000D750C1 /* PlayerTimeUtilsTests.swift */,
+			);
+			path = util;
+			sourceTree = "<group>";
+		};
+		A8E2330CCFB64814A0CA6ED4 /* util */ = {
+			isa = PBXGroup;
+			children = (
+				C84C1A0C7D324DE9BDCE7202 /* ProgressRestoreResolverTests.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -579,6 +593,7 @@
 				E9E8814A28DA644F00D750C1 /* PlayerTimeUtils.swift in Sources */,
 				3AB34055280832720039308B /* PlayerEvents.swift in Sources */,
 				E9D5506C28AC1E2100C746DD /* LocalMediaProgress.swift in Sources */,
+				E5B94F79DF5A4A17A7C8BF65 /* ProgressRestoreResolver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -587,6 +602,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9E8814D28DA6B9000D750C1 /* PlayerTimeUtilsTests.swift in Sources */,
+				C0FDE9CC40AB4E088E220211 /* ProgressRestoreResolverTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
