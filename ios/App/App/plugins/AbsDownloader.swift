@@ -21,6 +21,9 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
     
     private lazy var session: URLSession = {
         let config = URLSessionConfiguration.background(withIdentifier: "AbsDownloader")
+        // Pause transfers when connectivity drops and resume when it returns,
+        // instead of failing the task immediately
+        config.waitsForConnectivity = true
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 5
         return URLSession(configuration: config, delegate: self, delegateQueue: queue)
@@ -34,9 +37,103 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
     private var pendingDownloadTasks: [DownloadItemPartTask] = []
     private var activeDownloadTasks: Set<String> = [] // Track active task IDs
     private let maxConcurrentDownloads = 3
-    
-    
+    private var taskRetryCounts: [String: Int] = [:]
+    private let maxDownloadRetries = 5
+
+    // Network errors worth retrying with resume data instead of failing the download
+    static private let recoverableNetworkErrorCodes: Set<Int> = [
+        NSURLErrorNetworkConnectionLost,
+        NSURLErrorNotConnectedToInternet,
+        NSURLErrorTimedOut,
+        NSURLErrorCannotConnectToHost,
+        NSURLErrorCannotFindHost,
+        NSURLErrorDNSLookupFailed,
+        NSURLErrorInternationalRoamingOff,
+        NSURLErrorCallIsActive,
+        NSURLErrorDataNotAllowed
+    ]
+
     // MARK: - Download Queue Management
+
+    override public func load() {
+        reconcileDownloadState()
+    }
+
+    // Background URLSession tasks survive app relaunches, so on startup we cancel
+    // tasks whose download item part no longer exists and delete duplicate download
+    // items for the same library item, keeping the one that is furthest along.
+    private func reconcileDownloadState(retryOnEmptyTasks: Bool = true) {
+        session.getTasksWithCompletionHandler { [weak self] _, _, downloadTasks in
+            guard let self = self else { return }
+            do {
+                let realm = try Realm()
+
+                // A background session reconstitutes its tasks asynchronously after
+                // launch; an empty task list here may be stale, so verify once more
+                // before treating any item as a zombie
+                if downloadTasks.isEmpty && retryOnEmptyTasks &&
+                   realm.objects(DownloadItem.self).contains(where: { !$0.isDoneDownloading() }) {
+                    AbsLogger.info(message: "Download reconcile found no session tasks yet, re-checking after session reconstitutes")
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+                        self.reconcileDownloadState(retryOnEmptyTasks: false)
+                    }
+                    return
+                }
+
+                let livePartIds = Set(downloadTasks.compactMap { $0.taskDescription })
+                let allItems = realm.objects(DownloadItem.self)
+
+                var keptPartIds = Set<String>()
+                var reconcileMessages: [String] = []
+                let grouped = Dictionary(grouping: allItems) { "\($0.libraryItemId ?? "")|\($0.episodeId ?? "")" }
+                try realm.write {
+                    for (_, items) in grouped {
+                        for item in items where item.isDoneDownloading() {
+                            keptPartIds.formUnion(item.downloadItemParts.map { $0.id })
+                        }
+                        let alive = items
+                            .filter { !$0.isDoneDownloading() }
+                            .filter { item in
+                                item.downloadItemParts.contains { livePartIds.contains($0.id) }
+                            }
+                            .sorted { lhs, rhs in
+                                lhs.downloadItemParts.reduce(0) { $0 + $1.bytesDownloaded } >
+                                rhs.downloadItemParts.reduce(0) { $0 + $1.bytesDownloaded }
+                            }
+                        // Keep only the furthest-along item that still has running
+                        // tasks; incomplete items with no tasks are zombies left
+                        // behind when the app was terminated mid-download
+                        for item in items where !item.isDoneDownloading() && !alive.contains(where: { $0.id == item.id }) {
+                            reconcileMessages.append("Deleting stale download item for \(item.itemTitle ?? item.libraryItemId ?? "unknown") with no active tasks")
+                            realm.delete(item)
+                        }
+                        for (index, item) in alive.enumerated() {
+                            if index == 0 {
+                                keptPartIds.formUnion(item.downloadItemParts.map { $0.id })
+                            } else {
+                                reconcileMessages.append("Discarding duplicate download item for \(item.itemTitle ?? item.libraryItemId ?? "unknown")")
+                                realm.delete(item)
+                            }
+                        }
+                    }
+                }
+                // Logged outside the write transaction: AbsLogger performs its own
+                // Realm write, which would fail silently inside this one
+                reconcileMessages.forEach { AbsLogger.info(message: $0) }
+
+                for task in downloadTasks {
+                    guard let partId = task.taskDescription else { continue }
+                    if !keptPartIds.contains(partId) {
+                        AbsLogger.info(message: "Cancelling stale download task \(partId)")
+                        task.cancel()
+                    }
+                }
+            } catch {
+                AbsLogger.error(message: "Failed to reconcile download state")
+                debugPrint(error)
+            }
+        }
+    }
 
     private func startNextDownloadInQueue() {
         downloadQueueLock.lock()
@@ -101,6 +198,16 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        // Transient network failures are retried (resuming partial data when available)
+        // instead of failing the download item
+        if let nsError = error as NSError?,
+           nsError.domain == NSURLErrorDomain,
+           AbsDownloader.recoverableNetworkErrorCodes.contains(nsError.code),
+           let partId = task.taskDescription,
+           retryDownloadTask(task: task, partId: partId, error: nsError) {
+            return
+        }
+
         handleDownloadTaskUpdate(downloadTask: task) { downloadItem, downloadItemPart in
             if let error = error {
                 let realm = try Realm()
@@ -121,10 +228,54 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
 
         // Mark this task as completed and start the next download in queue
         if let taskId = task.taskDescription {
+            downloadQueueLock.lock()
+            taskRetryCounts.removeValue(forKey: taskId)
+            downloadQueueLock.unlock()
             markDownloadTaskCompleted(taskId)
         }
     }
-    
+
+    // Re-queues a failed task, resuming from downloaded bytes when URLSession
+    // provided resume data. Returns false when the part has no matching download
+    // item or the retry limit is reached, so the caller can fail it permanently.
+    private func retryDownloadTask(task: URLSessionTask, partId: String, error: NSError) -> Bool {
+        downloadQueueLock.lock()
+        let retryCount = (taskRetryCounts[partId] ?? 0) + 1
+        guard retryCount <= maxDownloadRetries else {
+            taskRetryCounts.removeValue(forKey: partId)
+            downloadQueueLock.unlock()
+            AbsLogger.error(message: "Download for part \(partId) failed after \(maxDownloadRetries) retries (\(error.code))")
+            return false
+        }
+        taskRetryCounts[partId] = retryCount
+        downloadQueueLock.unlock()
+
+        guard let downloadItem = Database.shared.getDownloadItem(downloadItemPartId: partId),
+              let part = downloadItem.downloadItemParts.first(where: { $0.id == partId }) else {
+            return false
+        }
+
+        let newTask: URLSessionDownloadTask
+        if let resumeData = error.userInfo[NSURLSessionDownloadTaskResumeData] as? Data {
+            AbsLogger.info(message: "Retrying download for \(part.filename ?? partId) with resume data (attempt \(retryCount)/\(maxDownloadRetries), error \(error.code))")
+            newTask = session.downloadTask(withResumeData: resumeData)
+        } else if let request = task.originalRequest {
+            AbsLogger.info(message: "Retrying download for \(part.filename ?? partId) from scratch (attempt \(retryCount)/\(maxDownloadRetries), error \(error.code))")
+            newTask = session.downloadTask(with: request)
+        } else {
+            AbsLogger.error(message: "Unable to retry download for part \(partId): no resume data or original request")
+            return false
+        }
+        newTask.taskDescription = partId
+
+        downloadQueueLock.lock()
+        activeDownloadTasks.remove(partId)
+        pendingDownloadTasks.append(DownloadItemPartTask(part: part, task: newTask, partId: partId, filename: part.filename ?? partId))
+        downloadQueueLock.unlock()
+        startNextDownloadInQueue()
+        return true
+    }
+
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         handleDownloadTaskUpdate(downloadTask: downloadTask) { downloadItem, downloadItemPart in
             // Calculate the download percentage
@@ -292,7 +443,36 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
         
         AbsLogger.info(message: "Download library item \(libraryItemId ?? "N/A") / episode \(episodeId ?? "N/A")")
         guard let libraryItemId = libraryItemId else { return call.resolve(["error": "libraryItemId not specified"]) }
-        
+
+        if let existing = Database.shared.getDownloadItem(libraryItemId: libraryItemId),
+           !existing.isDoneDownloading(),
+           existing.episodeId == episodeId {
+            // Only block as a duplicate when the item's tasks are actually running.
+            // An item whose tasks are gone (app was terminated) is a zombie and
+            // must be cleared so the download can be restarted.
+            let existingItemId = existing.id
+            let incompletePartIds = Set(existing.downloadItemParts.filter { !$0.completed }.map { $0.id })
+            session.getTasksWithCompletionHandler { [weak self] _, _, downloadTasks in
+                guard let self = self else { return }
+                let livePartIds = Set(downloadTasks.compactMap { $0.taskDescription })
+                if !incompletePartIds.isEmpty && !livePartIds.intersection(incompletePartIds).isEmpty {
+                    AbsLogger.info(message: "Download already in progress for \(libraryItemId) / episode \(episodeId ?? "N/A"), ignoring duplicate request")
+                    call.resolve(["alreadyDownloading": true])
+                } else {
+                    AbsLogger.info(message: "Clearing stale download item for \(libraryItemId) with no active tasks")
+                    if let stale = Database.shared.getDownloadItem(downloadItemId: existingItemId ?? "") {
+                        try? stale.delete()
+                    }
+                    self.fetchLibraryItemAndStartDownload(call, libraryItemId: libraryItemId, episodeId: episodeId)
+                }
+            }
+            return
+        }
+
+        fetchLibraryItemAndStartDownload(call, libraryItemId: libraryItemId, episodeId: episodeId)
+    }
+
+    private func fetchLibraryItemAndStartDownload(_ call: CAPPluginCall, libraryItemId: String, episodeId: String?) {
         ApiClient.getLibraryItemWithProgress(libraryItemId: libraryItemId, episodeId: episodeId) { [weak self] libraryItem in
             if let libraryItem = libraryItem {
                 AbsLogger.info(message: "Got library item from server \(libraryItem.id)")
