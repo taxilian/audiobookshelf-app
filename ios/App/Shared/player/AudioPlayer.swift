@@ -738,7 +738,14 @@ class AudioPlayer: NSObject {
             return .success
         }
         
-        commandCenter.nextTrackCommand.isEnabled = true
+        // Leave these disabled but keep the targets. iOS picks either
+        // next/previous track buttons or skip-interval buttons based on which
+        // commands are enabled — flakily when both are — so disabling these
+        // makes the skip arrows show consistently. Targets stay registered
+        // because iOS hides a command's button only when it has a target, and
+        // some event sources (e.g. Siri, possibly accessories) can still
+        // deliver events to disabled commands.
+        commandCenter.nextTrackCommand.isEnabled = false
         commandCenter.nextTrackCommand.removeTarget(nil)
         commandCenter.nextTrackCommand.addTarget { [weak self] _ in
             guard let currentTime = self?.getCurrentTime() else {
@@ -747,7 +754,7 @@ class AudioPlayer: NSObject {
             self?.seek(currentTime + Double(jumpForwardTime), from: "remote")
             return .success
         }
-        commandCenter.previousTrackCommand.isEnabled = true
+        commandCenter.previousTrackCommand.isEnabled = false
         commandCenter.previousTrackCommand.removeTarget(nil)
         commandCenter.previousTrackCommand.addTarget { [weak self] _ in
             guard let currentTime = self?.getCurrentTime() else {
