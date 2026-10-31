@@ -19,7 +19,7 @@
       </div>
     </template>
 
-    <modals-dialog v-model="showItemDialog" :items="itemDialogItems" :title="selectedItemPartTitle" @action="itemDialogAction" />
+    <modals-dialog v-if="isIos" v-model="showItemDialog" :items="itemDialogItems" :title="selectedItemPartTitle" @action="itemDialogAction" />
   </div>
 </template>
 
@@ -42,18 +42,22 @@ export default {
       this.downloadItems.forEach((di) => parts.push(...di.downloadItemParts))
       return parts
     },
+    isIos() {
+      return this.$platform === 'ios'
+    },
     selectedItemPartTitle() {
       return this.selectedItemPart ? this.selectedItemPart.filename : ''
     },
     itemDialogItems() {
       return [
-        { text: 'Cancel download', value: 'cancel' },
+        { text: this.$strings.ButtonCancel, value: 'cancel' },
         { text: 'Keep downloading', value: 'keep' }
       ]
     }
   },
   methods: {
     clickedItemPart(itemPart) {
+      if (!this.isIos) return
       this.selectedItemPart = itemPart
       this.showItemDialog = true
     },

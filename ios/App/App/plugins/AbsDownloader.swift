@@ -308,7 +308,7 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
 
         // Remove from the progress monitor first so it never emits a failure
         // notification for a user-cancelled item
-        progressStatusQueue.async(flags: .barrier) {
+        progressStatusQueue.sync(flags: .barrier) {
             self.downloadItemProgress.removeValue(forKey: downloadItemId)
         }
 
@@ -322,6 +322,7 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
             for task in downloadTasks where partIds.contains(task.taskDescription ?? "") {
                 task.cancel()
             }
+            call.resolve()
         }
 
         // Remove partial files unless a local library item already lives in that folder
@@ -332,7 +333,6 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
             try? FileManager.default.removeItem(at: itemFolder)
         }
 
-        call.resolve()
     }
 
     @objc func downloadLibraryItem(_ call: CAPPluginCall) {
