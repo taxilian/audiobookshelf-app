@@ -80,7 +80,7 @@ export default {
       this.$store.commit('globals/updateDownloadItemPart', itemPart)
       // Progress arrived for an item the store doesn't know about (e.g. app was
       // relaunched mid-download): pull the active downloads from native
-      if (!this.downloadItems.some((i) => i.id === itemPart.downloadItemId)) {
+      if (this.isIos && !this.downloadItems.some((i) => i.id === itemPart.downloadItemId)) {
         this.restoreActiveDownloads()
       }
     },
@@ -109,10 +109,12 @@ export default {
     // Restore downloads still running natively (they survive app relaunches).
     // Retried because a background URLSession reconstitutes its tasks
     // asynchronously after launch and early queries can come back empty.
-    this.restoreActiveDownloads()
-    this.restoreTimers = [2000, 6000, 15000].map((delay) => setTimeout(() => {
-      if (!this.downloadItems.length) this.restoreActiveDownloads()
-    }, delay))
+    if (this.isIos) {
+      this.restoreActiveDownloads()
+      this.restoreTimers = [2000, 6000, 15000].map((delay) => setTimeout(() => {
+        if (!this.downloadItems.length) this.restoreActiveDownloads()
+      }, delay))
+    }
   },
   beforeDestroy() {
     this.downloadItemListener?.remove()
