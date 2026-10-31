@@ -34,7 +34,7 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
     private var pendingDownloadTasks: [DownloadItemPartTask] = []
     private var activeDownloadTasks: Set<String> = [] // Track active task IDs
     private let maxConcurrentDownloads = 3
-    private var speedTrackers: [String: (bytes: Double, time: Date, ema: Double)] = [:]
+    private var speedTrackers: [String: DownloadSpeedTracker] = [:]
 
     
     // MARK: - Download Queue Management
@@ -66,22 +66,15 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
     private func recordDownloadSpeed(partId: String, bytesWritten: Double) {
         downloadQueueLock.lock()
         defer { downloadQueueLock.unlock() }
-        let now = Date()
-        guard let last = speedTrackers[partId] else {
-            speedTrackers[partId] = (bytesWritten, now, 0)
-            return
-        }
-        let dt = now.timeIntervalSince(last.time)
-        guard dt > 0.1 else { return }
-        let instant = max(0, (bytesWritten - last.bytes) / dt)
-        let ema = last.ema == 0 ? instant : last.ema * 0.7 + instant * 0.3
-        speedTrackers[partId] = (bytesWritten, now, ema)
+        var tracker = speedTrackers[partId] ?? DownloadSpeedTracker()
+        tracker.record(totalBytes: bytesWritten, at: Date().timeIntervalSinceReferenceDate)
+        speedTrackers[partId] = tracker
     }
 
     private func currentDownloadSpeed(forPart partId: String) -> Double {
         downloadQueueLock.lock()
         defer { downloadQueueLock.unlock() }
-        return speedTrackers[partId]?.ema ?? 0
+        return speedTrackers[partId]?.bytesPerSecond ?? 0
     }
 
 
@@ -205,7 +198,7 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
                 try progressHandler(downloadItem, part)
                 if var data = try? part.asDictionary() {
                     data["downloadSpeed"] = self.currentDownloadSpeed(forPart: part.id)
-                    try? self.notifyListeners("onDownloadItemPartUpdate", data: data)
+                    self.notifyListeners("onDownloadItemPartUpdate", data: data)
                 }
             } catch {
                 AbsLogger.error(message: "Error while processing progress")
