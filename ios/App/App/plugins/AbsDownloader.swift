@@ -82,48 +82,33 @@ public class AbsDownloader: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDeleg
 
                 let livePartIds = Set(downloadTasks.compactMap { $0.taskDescription })
                 let allItems = realm.objects(DownloadItem.self)
+                let summaries = allItems.map { item in
+                    DownloadReconciler.ItemSummary(
+                        id: item.id!,
+                        groupKey: "\(item.libraryItemId ?? "")|\(item.episodeId ?? "")",
+                        title: item.itemTitle ?? item.libraryItemId ?? "unknown",
+                        partIds: Set(item.downloadItemParts.map { $0.id }),
+                        isDone: item.isDoneDownloading(),
+                        bytesDownloaded: item.downloadItemParts.reduce(0) { $0 + $1.bytesDownloaded }
+                    )
+                }
+                let plan = DownloadReconciler.plan(items: Array(summaries), livePartIds: livePartIds)
 
-                var keptPartIds = Set<String>()
-                var reconcileMessages: [String] = []
-                let grouped = Dictionary(grouping: allItems) { "\($0.libraryItemId ?? "")|\($0.episodeId ?? "")" }
+                // Keep only the furthest-along item that still has running
+                // tasks; incomplete items with no tasks are zombies left
+                // behind when the app was terminated mid-download
                 try realm.write {
-                    for (_, items) in grouped {
-                        for item in items where item.isDoneDownloading() {
-                            keptPartIds.formUnion(item.downloadItemParts.map { $0.id })
-                        }
-                        let alive = items
-                            .filter { !$0.isDoneDownloading() }
-                            .filter { item in
-                                item.downloadItemParts.contains { livePartIds.contains($0.id) }
-                            }
-                            .sorted { lhs, rhs in
-                                lhs.downloadItemParts.reduce(0) { $0 + $1.bytesDownloaded } >
-                                rhs.downloadItemParts.reduce(0) { $0 + $1.bytesDownloaded }
-                            }
-                        // Keep only the furthest-along item that still has running
-                        // tasks; incomplete items with no tasks are zombies left
-                        // behind when the app was terminated mid-download
-                        for item in items where !item.isDoneDownloading() && !alive.contains(where: { $0.id == item.id }) {
-                            reconcileMessages.append("Deleting stale download item for \(item.itemTitle ?? item.libraryItemId ?? "unknown") with no active tasks")
-                            realm.delete(item)
-                        }
-                        for (index, item) in alive.enumerated() {
-                            if index == 0 {
-                                keptPartIds.formUnion(item.downloadItemParts.map { $0.id })
-                            } else {
-                                reconcileMessages.append("Discarding duplicate download item for \(item.itemTitle ?? item.libraryItemId ?? "unknown")")
-                                realm.delete(item)
-                            }
-                        }
+                    for item in allItems where plan.itemIdsToDelete.contains(item.id!) {
+                        realm.delete(item)
                     }
                 }
                 // Logged outside the write transaction: AbsLogger performs its own
                 // Realm write, which would fail silently inside this one
-                reconcileMessages.forEach { AbsLogger.info(message: $0) }
+                plan.messages.forEach { AbsLogger.info(message: $0) }
 
                 for task in downloadTasks {
                     guard let partId = task.taskDescription else { continue }
-                    if !keptPartIds.contains(partId) {
+                    if !plan.keptPartIds.contains(partId) {
                         AbsLogger.info(message: "Cancelling stale download task \(partId)")
                         task.cancel()
                     }
